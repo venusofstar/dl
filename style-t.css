@@ -37,7 +37,7 @@ h4{font-size:.9rem;margin:6px 0 4px}
 .close-btn{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.85);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:22px;font-weight:bold;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 10px rgba(0,0,0,.5)}
 .close-btn:hover{background:var(--pri)}
 
-/* === SEASON & EPISODE SELECTOR === */
+/* === SEASON & EPISODE SELECTOR — NOW SHOWS ALL SEASONS === */
 .sel-bar{display:flex;gap:8px;padding:10px;background:var(--card);border-bottom:1px solid #000;z-index:20;flex-wrap:wrap;align-items:center}
 .sel-bar select{flex:1;min-width:120px;padding:8px 10px;border-radius:6px;background:var(--light);color:#fff;border:none;outline:none;font-size:.85rem;cursor:pointer}
 .sel-bar .btn{max-width:140px;padding:8px 12px;font-size:.85rem;flex-shrink:0}
