@@ -2,11 +2,10 @@ const TMDB_API_KEY = "b5632a62ba8688ec27b39712c1d5cfcc";
 const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
 const VIDVAULT_MOVIE = "https://vidvault.ru/movie/";
 const VIDVAULT_TV    = "https://vidvault.ru/tv/";
-const FALLBACK_IMG = "https://via.placeholder.com/300x420/242426/f8f9fa?text=No+Poster";
 
 let currentShowId = null, showSeasons = [];
 
-// ✅ OPEN PLAYER — Movies direct / Series → Load Seasons
+// ✅ OPEN PLAYER — Movies direct / Series → LOAD ALL SEASONS FROM TMDB
 async function openFullscreenPlayer(type, directUrl = null, showId = null){
   const overlay = document.getElementById('globalPlayer');
   const frame = document.getElementById('streamFrame');
@@ -20,7 +19,7 @@ async function openFullscreenPlayer(type, directUrl = null, showId = null){
     return;
   }
 
-  // 📺 SERIES
+  // 📺 SERIES: Fetch & list EVERY Season automatically
   currentShowId = showId;
   selector.style.display = 'flex';
   overlay.classList.add('active');
@@ -43,6 +42,7 @@ async function openFullscreenPlayer(type, directUrl = null, showId = null){
       return;
     }
 
+    // ✅ SHOW ALL SEASONS
     seasonSelect.innerHTML = '';
     showSeasons.forEach(season => {
       const opt = document.createElement('option');
@@ -50,11 +50,11 @@ async function openFullscreenPlayer(type, directUrl = null, showId = null){
       opt.textContent = `Season ${season.season_number} (${season.episode_count} Eps)`;
       seasonSelect.appendChild(opt);
     });
-    seasonChanged();
+    seasonChanged(); // load eps for S1 automatically
   }catch(err){
-    console.warn('TMDB unreachable:', err);
-    seasonSelect.innerHTML = `<option>⚠️ TMDB Offline — Using Fallback</option>`;
-    // Built‑in fallback for House of the Dragon
+    seasonSelect.innerHTML = `<option>⚠️ Cannot load seasons</option>`;
+    console.warn('TMDB unreachable — using fallback:', err);
+    // Fallback: House of the Dragon known structure
     if(showId === 94997){
       showSeasons = [{season_number:1,episode_count:10}];
       seasonSelect.innerHTML = '<option value="1">Season 1 (10 Eps)</option>';
@@ -63,7 +63,7 @@ async function openFullscreenPlayer(type, directUrl = null, showId = null){
   }
 }
 
-// ✅ Season change → rebuild episode list
+// ✅ When Season changes → load correct number of Episodes
 function seasonChanged(){
   const selNum = parseInt(document.getElementById('seasonSelect').value);
   const season = showSeasons.find(s => s.season_number === selNum);
@@ -80,16 +80,14 @@ function seasonChanged(){
   playEpisode();
 }
 
-// ✅ Build stream link — warn if source is dead
+// ✅ Build & open VidVault link: /tv/ID/SEASON/EPISODE
 function playEpisode(){
   const s = document.getElementById('seasonSelect').value;
   const e = document.getElementById('episodeSelect').value;
-  const src = `${VIDVAULT_TV}${currentShowId}/${s}/${e}`;
-  console.log('⚠️ Note: VidVault.ru returns 404 — stream will not load:', src);
-  document.getElementById('streamFrame').src = src;
+  document.getElementById('streamFrame').src = `${VIDVAULT_TV}${currentShowId}/${s}/${e}`;
 }
 
-// ✕ CLOSE PLAYER
+// ✕ CLOSE PLAYER — CLEAN EVERYTHING
 function closeFullscreenPlayer(){
   const overlay = document.getElementById('globalPlayer');
   const frame = document.getElementById('streamFrame');
@@ -131,7 +129,7 @@ function getEls(container){ return {grid:container.querySelector('.results'), lo
 function renderItems(list, grid, type){
   if(!list.length){ grid.innerHTML='<p class="error">⚠️ API currently unavailable</p>'; return; }
   grid.innerHTML=list.map(m=>{
-    const poster=m.poster_path? `${TMDB_IMG_BASE}${m.poster_path}`: FALLBACK_IMG;
+    const poster=m.poster_path? `${TMDB_IMG_BASE}${m.poster_path}`:'https://via.placeholder.com/300x420/242426/f8f9fa?text=No+Poster';
     const year=(m.release_date||m.first_air_date)? (m.release_date||m.first_air_date).substring(0,4):'TBA';
     const title=m.title||m.name||'Untitled';
 
@@ -139,11 +137,11 @@ function renderItems(list, grid, type){
       return `
       <div class="card" tabindex="0" data-name="${title.toLowerCase()}">
         <div class="img-wrap" onclick="openFullscreenPlayer('tv',null,${m.id})">
-          <img src="${poster}" alt="${title}" loading="lazy" onerror="this.src='${FALLBACK_IMG}'">
+          <img src="${poster}" alt="${title}" loading="lazy">
         </div>
         <div class="info">
           <h3>${title}</h3>
-          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>⚠️ VidVault.ru offline</div>
+          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>👆 Auto‑loads ALL Seasons</div>
           <button class="btn" onclick="openFullscreenPlayer('tv',null,${m.id})">📺 Select Season & Episode</button>
         </div>
       </div>`;
@@ -152,11 +150,11 @@ function renderItems(list, grid, type){
       return `
       <div class="card" tabindex="0" data-name="${title.toLowerCase()}">
         <div class="img-wrap" onclick="openFullscreenPlayer('movie','${streamLink}')">
-          <img src="${poster}" alt="${title}" loading="lazy" onerror="this.src='${FALLBACK_IMG}'">
+          <img src="${poster}" alt="${title}" loading="lazy">
         </div>
         <div class="info">
           <h3>${title}</h3>
-          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>⚠️ VidVault.ru 404</div>
+          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>👆 Click → Full‑Screen View</div>
           <button class="btn" onclick="openFullscreenPlayer('movie','${streamLink}')">⬇️ Download / View</button>
         </div>
       </div>`;
@@ -173,7 +171,7 @@ async function loadData(url, containerEl, type){
     const data=await res.json();
     renderItems(data.results||[], grid, type);
   }catch(err){ 
-    error.textContent='⚠️ TMDB API currently unreachable — check your key or network'; 
+    error.textContent='⚠️ TMDB API currently unreachable'; 
     error.classList.remove('hidden'); 
   }finally{ loading.classList.add('hidden'); }
 }
@@ -196,7 +194,7 @@ document.querySelectorAll('.searchField').forEach(inp=>{
   });
 });
 
-// 📺 TV Remote Navigation
+// TV Remote Navigation
 document.addEventListener('keydown',e=>{
   if(document.getElementById('globalPlayer').classList.contains('active')) return;
   const activeCat=document.querySelector('.category.active');
@@ -209,7 +207,7 @@ document.addEventListener('keydown',e=>{
   else if(['Enter',' '].includes(e.key)){
     e.preventDefault();
     if(document.activeElement.classList.contains('tab'))document.activeElement.click();
-    else if(document.activeElement.classList.contains('btn'))document.activeElement.click();
+    else if(document.activeElement.classList.contains('img-wrap')||document.activeElement.classList.contains('btn'))document.activeElement.click();
     else if(document.activeElement.classList.contains('card'))document.activeElement.querySelector('.img-wrap')?.click()||document.activeElement.querySelector('.btn')?.focus();
   }
 });
