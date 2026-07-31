@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Streaming Center</title>
+<style>
+:root{--pri:#1a73e8;--bg:#121212;--card:#242426;--txt:#f8f9fa;--warn:#ffcc00;--err:#e53935;--inactive:#3a3a3c;--light:#38383a;--focus:0 0 0 2px #4285f4,0 0 12px rgba(66,133,244,.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Segoe UI,Roboto,sans-serif;padding:8px;min-height:100vh;line-height:1.35}
+.container{max-width:1100px;margin:0 auto}
+h1{text-align:center;font-size:clamp(1.15rem,3.8vw,2rem);margin:0 0 10px}
+h2{font-size:1rem;margin:8px 0 12px;color:#ddd}
+h4{font-size:.9rem;margin:6px 0 4px}
+
+/* === SEARCH === */
+.search-wrap{max-width:440px;margin:0 auto 12px;position:relative}
+.searchField{width:100%;padding:9px 12px 9px 34px;border:none;border-radius:8px;background:var(--card);color:var(--txt);font-size:.9rem;outline:none}
+.searchField:focus{box-shadow:var(--focus)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#999;font-size:1rem}
+.loading{text-align:center;padding:20px;color:#aaa}
+.error{color:var(--err);text-align:center;padding:15px;font-size:.9rem}
+
+/* === TABS === */
+.tabs{display:flex;gap:6px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:7px 13px;background:var(--inactive);border:none;border-radius:7px;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;outline:none;transition:all .2s}
+.tab.active{background:var(--pri)}
+.tab:focus{box-shadow:var(--focus)}
+
+/* === GRID & CARD === */
+.category{display:none}
+.category.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:var(--card);border-radius:9px;overflow:hidden;outline:none;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+.card:focus,.btn:focus{transform:scale(1.025);box-shadow:var(--focus)}
+
+/* === FULLSCREEN IFRAME OVERLAY === */
+.player-overlay{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:0}
+.player-overlay.active{display:flex}
+.player-wrapper{position:relative;width:100%;height:100%;display:flex;flex-direction:column}
+.player-wrapper iframe{width:100%;height:100%;border:none;display:block;allowfullscreen allow="autoplay; fullscreen; picture-in-picture"}
+
+/* ✕ CLOSE BUTTON */
+.close-btn{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.85);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:22px;font-weight:bold;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 10px rgba(0,0,0,.5)}
+.close-btn:hover{background:var(--pri)}
+
+/* === SEASON & EPISODE SELECTOR — NOW SHOWS ALL SEASONS === */
+.sel-bar{display:flex;gap:8px;padding:10px;background:var(--card);border-bottom:1px solid #000;z-index:20;flex-wrap:wrap;align-items:center}
+.sel-bar select{flex:1;min-width:120px;padding:8px 10px;border-radius:6px;background:var(--light);color:#fff;border:none;outline:none;font-size:.85rem;cursor:pointer}
+.sel-bar .btn{max-width:140px;padding:8px 12px;font-size:.85rem;flex-shrink:0}
+.sel-loading{color:#aaa;font-size:.85rem;padding:6px 8px}
+
+.img-wrap{width:100%;height:140px;background:#000;flex-shrink:0;cursor:pointer;transition:opacity .2s}
+.img-wrap:hover{opacity:.9}
+img{width:100%;height:100%;object-fit:cover;display:block}
+.info{padding:10px;flex-grow:1;display:flex;flex-direction:column}
+h3{font-size:.9rem;margin:0 0 5px;line-height:1.2}
+.desc{color:#bbb;font-size:.78rem;margin:0 0 9px;line-height:1.35}
+.btn{display:block;padding:8px;background:var(--pri);color:#fff;text-align:center;border-radius:6px;outline:none;font-size:.85rem;transition:background .2s;border:none;cursor:pointer;width:100%;font-weight:600}
+.btn:hover,.btn:focus{background:#0066cc}
+.hidden{display:none !important}
+.warn{font-size:.7rem;color:var(--warn);margin-top:5px;text-align:center}
+
+/* Responsive */
+@media (min-width:600px){.grid{grid-template-columns:repeat(3,1fr);gap:14px}.img-wrap{height:160px}.info{padding:12px};h3{font-size:1rem}}
+@media (min-width:1024px){.grid{grid-template-columns:repeat(4,240px);justify-content:center;gap:18px}.img-wrap{height:180px};body{padding:16px};h1{margin-bottom:16px};.tab{padding:9px 18px;font-size:.95rem}}
+@media (max-width:359px){.img-wrap{height:120px};.info{padding:8px};h3{font-size:.85rem};.desc{font-size:.75rem;margin-bottom:7px};.btn{padding:7px;font-size:.82rem};.sel-bar{flex-direction:column;gap:6px;align-items:stretch}}
+</style>
+</head>
+<body>
+
+<!-- ✅ GLOBAL FULL‑SCREEN PLAYER WITH FULL SEASON SUPPORT -->
+<div class="player-overlay" id="globalPlayer">
+  <div class="player-wrapper">
+    <button class="close-btn" onclick="closeFullscreenPlayer()">✕</button>
+    <div class="sel-bar" id="seriesSelector" style="display:none">
+      <h4 style="color:#fff;margin:0 8px 0 0">Season:</h4>
+      <select id="seasonSelect" onchange="seasonChanged()">
+        <option class="sel-loading">Loading…</option>
+      </select>
+      <h4 style="color:#fff;margin:0 8px 0 0">Episode:</h4>
+      <select id="episodeSelect" onchange="playEpisode()">
+        <option class="sel-loading">—</option>
+      </select>
+      <button class="btn" onclick="playEpisode()">▶ Play</button>
+    </div>
+    <iframe id="streamFrame" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" style="flex:1"></iframe>
+  </div>
+</div>
+
+<div class="container">
+<h1>📺 Streaming Center</h1>
+
+<div class="tabs">
+<button class="tab active" data-cat="movies">🎬 Movies</button>
+<button class="tab" data-cat="series">📺 Series</button>
+<button class="tab" data-cat="apps">📱 Apps</button>
+<button class="tab" data-cat="websites">🌐 Websites</button>
+</div>
+
+<!-- === 🎬 MOVIES === -->
+<div class="category active" id="movies">
+  <div class="search-wrap"><span class="search-icon">🔍</span>
+  <input type="text" class="searchField" placeholder="Search movies...">
+  </div>
+  <div class="grid results"></div>
+  <div class="loading">Loading popular movies...</div>
+  <div class="error hidden"></div>
+
+  <br><h2>📌 Local Movies</h2>
+  <div class="grid">
+  <div class="card" tabindex="0" data-name="colony 2026 movie 1080">
+    <div class="img-wrap" onclick="openFullscreenPlayer('movie','https://download2363.mediafire.com/soalqg7hjsvg47nzAMIOk6W1bWHReAfLP82Gwhq-qq0kifKZYJ3mRB0Os2FPg4s2ssrnl33XHKnN5ED-Kz8xj_vqnK_xg1olk_1TBdlNXDQqF0QLTiPe5dvrJAKg_wuikqTb4N5G8xAUO8ne_N658Y-J7BpeOq8r9YAOU-PFU_E0_A/webr81e7rflzj81/Colony.2026.1080p.WAVVE.WEB-DL.AAC2.0.H.264-DepWeb.mkv')">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMUYCz2NFboyTlMy68iu4coe37WPlrWDojkZZ1FVpFe2wXNjA6wdyTrECp&s=10" alt="Colony (2026)" loading="lazy">
+    </div>
+    <div class="info">
+      <h3>Colony (2026)</h3>
+      <div class="desc">1080p WEB‑DL · MKV H.264<br>👆 Click → Full‑Screen View</div>
+      <button class="btn" onclick="openFullscreenPlayer('movie','https://download2363.mediafire.com/soalqg7hjsvg47nzAMIOk6W1bWHReAfLP82Gwhq-qq0kifKZYJ3mRB0Os2FPg4s2ssrnl33XHKnN5ED-Kz8xj_vqnK_xg1olk_1TBdlNXDQqF0QLTiPe5dvrJAKg_wuikqTb4N5G8xAUO8ne_N658Y-J7BpeOq8r9YAOU-PFU_E0_A/webr81e7rflzj81/Colony.2026.1080p.WAVVE.WEB-DL.AAC2.0.H.264-DepWeb.mkv')">⬇️ Download / View</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- === 📺 SERIES === -->
+<div class="category" id="series">
+  <div class="search-wrap"><span class="search-icon">🔍</span>
+  <input type="text" class="searchField" placeholder="Search TV series...">
+  </div>
+  <div class="grid results"></div>
+  <div class="loading">Loading popular series...</div>
+  <div class="error hidden"></div>
+
+  <br><h2>📌 Local Series Example</h2>
+  <div class="grid">
+  <div class="card" tabindex="0" data-name="house of the dragon">
+    <div class="img-wrap" onclick="openFullscreenPlayer('tv',null,94997)">
+      <img src="https://upload.wikimedia.org/wikipedia/en/7/70/House_of_the_Dragon_key_art.jpg" alt="House of the Dragon" loading="lazy">
+    </div>
+    <div class="info">
+      <h3>House of the Dragon (2022)</h3>
+      <div class="desc">Auto‑loads ALL Seasons & Episodes<br>👆 Click → Select & Play</div>
+      <button class="btn" onclick="openFullscreenPlayer('tv',null,94997)">📺 Select Season & Episode</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- === 📱 APPS === -->
+<div class="category" id="apps">
+<div class="grid">
+<div class="card" tabindex="0" data-name="honor tv vip">
+<div class="img-wrap"><img src="https://i.imgur.com/C6CD0gF.jpeg" alt="HONOR TV VIP" loading="lazy"></div>
+<div class="info">
+<h3>HONOR TV VIP 1.3</h3>
+<div class="desc">Smart TV & Android streaming app.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Link Dead</a>
+<p class="warn">Link unavailable</p>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="maflix">
+<div class="img-wrap"><img src="https://i.imgur.com/cdSX74I.png" alt="MAFLIX" loading="lazy"></div>
+<div class="info">
+<h3>MAFLIX v1.1</h3>
+<div class="desc">Movies & series app.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Unsupported File</a>
+<p class="warn">File type error</p>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="ott tv">
+<div class="img-wrap"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ7MHfAy4aUvx6tWJ17dZtIlmnpXmgWRpwFq8Qe-oc13TOrd-IuPe2xU6p&s=10" alt="OTT TV" loading="lazy"></div>
+<div class="info">
+<h3>OTT TV v1.7.2.2</h3>
+<div class="desc">IPTV & live player.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Unsupported File</a>
+<p class="warn">File type error</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- === 🌐 WEBSITES === -->
+<div class="category" id="websites">
+<div class="grid">
+<div class="card" tabindex="0" data-name="maflix website movies">
+<div class="img-wrap"><img src="https://i.imgur.com/cdSX74I.png" alt="MAFLIX Website" loading="lazy"></div>
+<div class="info">
+<h3>MAFLIX</h3>
+<div class="desc">Free movies & series site</div>
+<a class="btn" href="https://maflix.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="masports live sports">
+<div class="img-wrap" style="background:linear-gradient(135deg,#34a853,#0d9668);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:default">⚽</div>
+<div class="info">
+<h3>MASPORTS</h3>
+<div class="desc">Free live sports streaming</div>
+<a class="btn" href="https://masports.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+const TMDB_API_KEY = "b5632a62ba8688ec27b39712c1d5cfcc";
+const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
+const VIDVAULT_MOVIE = "https://vidvault.ru/movie/";
+const VIDVAULT_TV    = "https://vidvault.ru/tv/";
+
+let currentShowId = null, showSeasons = [];
+
+// ✅ OPEN PLAYER — Movies direct / Series → LOAD ALL SEASONS FROM TMDB
+async function openFullscreenPlayer(type, directUrl = null, showId = null){
+  const overlay = document.getElementById('globalPlayer');
+  const frame = document.getElementById('streamFrame');
+  const selector = document.getElementById('seriesSelector');
+
+  if(type === 'movie'){
+    selector.style.display = 'none';
+    frame.src = directUrl;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
+  // 📺 SERIES: Fetch & list EVERY Season automatically
+  currentShowId = showId;
+  selector.style.display = 'flex';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  const seasonSelect = document.getElementById('seasonSelect');
+  const episodeSelect = document.getElementById('episodeSelect');
+  seasonSelect.innerHTML = '<option>Loading seasons…</option>';
+  episodeSelect.innerHTML = '<option>—</option>';
+  frame.src = '';
+
+  try{
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${showId}?api_key=${TMDB_API_KEY}&language=en-US`);
+    if(!res.ok) throw new Error('API Error');
+    const data = await res.json();
+    showSeasons = data.seasons?.filter(s => s.season_number > 0) || [];
+
+    if(!showSeasons.length){
+      seasonSelect.innerHTML = '<option>No seasons found</option>';
+      return;
+    }
+
+    // ✅ SHOW ALL SEASONS
+    seasonSelect.innerHTML = '';
+    showSeasons.forEach(season => {
+      const opt = document.createElement('option');
+      opt.value = season.season_number;
+      opt.textContent = `Season ${season.season_number} (${season.episode_count} Eps)`;
+      seasonSelect.appendChild(opt);
+    });
+    seasonChanged(); // load eps for S1 automatically
+  }catch(err){
+    seasonSelect.innerHTML = `<option>⚠️ Cannot load seasons</option>`;
+    console.warn('TMDB unreachable — using fallback:', err);
+    // Fallback: House of the Dragon known structure
+    if(showId === 94997){
+      showSeasons = [{season_number:1,episode_count:10}];
+      seasonSelect.innerHTML = '<option value="1">Season 1 (10 Eps)</option>';
+      seasonChanged();
+    }
+  }
+}
+
+// ✅ When Season changes → load correct number of Episodes
+function seasonChanged(){
+  const selNum = parseInt(document.getElementById('seasonSelect').value);
+  const season = showSeasons.find(s => s.season_number === selNum);
+  const count = season?.episode_count || 1;
+
+  const episodeSelect = document.getElementById('episodeSelect');
+  episodeSelect.innerHTML = '';
+  for(let e = 1; e <= count; e++){
+    const opt = document.createElement('option');
+    opt.value = e;
+    opt.textContent = `Episode ${e}`;
+    episodeSelect.appendChild(opt);
+  }
+  playEpisode();
+}
+
+// ✅ Build & open VidVault link: /tv/ID/SEASON/EPISODE
+function playEpisode(){
+  const s = document.getElementById('seasonSelect').value;
+  const e = document.getElementById('episodeSelect').value;
+  document.getElementById('streamFrame').src = `${VIDVAULT_TV}${currentShowId}/${s}/${e}`;
+}
+
+// ✕ CLOSE PLAYER — CLEAN EVERYTHING
+function closeFullscreenPlayer(){
+  const overlay = document.getElementById('globalPlayer');
+  const frame = document.getElementById('streamFrame');
+  const selector = document.getElementById('seriesSelector');
+  overlay.classList.remove('active');
+  frame.src = '';
+  selector.style.display = 'none';
+  document.body.style.overflow = '';
+  currentShowId = null; showSeasons = [];
+  if((document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement)){
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
+  }
+}
+
+// ESC / BACKSPACE CLOSE
+document.addEventListener('keydown',e=>{
+  if((e.key==='Escape'||e.key==='Backspace') && document.getElementById('globalPlayer').classList.contains('active')){
+    e.preventDefault(); closeFullscreenPlayer();
+  }
+});
+
+// Tab Switching
+const tabs=document.querySelectorAll('.tab'), cats=document.querySelectorAll('.category');
+tabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    cats.forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.cat).classList.add('active');
+    document.querySelectorAll('.searchField').forEach(el=>el.value='');
+    document.body.focus();
+  });
+});
+
+function getEls(container){ return {grid:container.querySelector('.results'), loading:container.querySelector('.loading'), error:container.querySelector('.error')}; }
+
+function renderItems(list, grid, type){
+  if(!list.length){ grid.innerHTML='<p class="error">⚠️ API currently unavailable</p>'; return; }
+  grid.innerHTML=list.map(m=>{
+    const poster=m.poster_path? `${TMDB_IMG_BASE}${m.poster_path}`:'https://via.placeholder.com/300x420/242426/f8f9fa?text=No+Poster';
+    const year=(m.release_date||m.first_air_date)? (m.release_date||m.first_air_date).substring(0,4):'TBA';
+    const title=m.title||m.name||'Untitled';
+
+    if(type==='tv'){
+      return `
+      <div class="card" tabindex="0" data-name="${title.toLowerCase()}">
+        <div class="img-wrap" onclick="openFullscreenPlayer('tv',null,${m.id})">
+          <img src="${poster}" alt="${title}" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>${title}</h3>
+          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>👆 Auto‑loads ALL Seasons</div>
+          <button class="btn" onclick="openFullscreenPlayer('tv',null,${m.id})">📺 Select Season & Episode</button>
+        </div>
+      </div>`;
+    }else{
+      const streamLink=`${VIDVAULT_MOVIE}${m.id}`;
+      return `
+      <div class="card" tabindex="0" data-name="${title.toLowerCase()}">
+        <div class="img-wrap" onclick="openFullscreenPlayer('movie','${streamLink}')">
+          <img src="${poster}" alt="${title}" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>${title}</h3>
+          <div class="desc">${year} · ⭐ ${(m.vote_average||0).toFixed(1)}<br>👆 Click → Full‑Screen View</div>
+          <button class="btn" onclick="openFullscreenPlayer('movie','${streamLink}')">⬇️ Download / View</button>
+        </div>
+      </div>`;
+    }
+  }).join('');
+}
+
+async function loadData(url, containerEl, type){
+  const {grid,loading,error}=getEls(containerEl);
+  grid.innerHTML=''; loading.classList.remove('hidden'); error.classList.add('hidden');
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('API Error');
+    const data=await res.json();
+    renderItems(data.results||[], grid, type);
+  }catch(err){ 
+    error.textContent='⚠️ TMDB API currently unreachable'; 
+    error.classList.remove('hidden'); 
+  }finally{ loading.classList.add('hidden'); }
+}
+
+const moviesCat=document.getElementById('movies');
+const seriesCat=document.getElementById('series');
+
+loadData(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=en-US`, moviesCat, 'movie');
+loadData(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_API_KEY}&language=en-US`, seriesCat, 'tv');
+
+let timer;
+document.querySelectorAll('.searchField').forEach(inp=>{
+  inp.addEventListener('input',e=>{
+    clearTimeout(timer);
+    const q=e.target.value.trim();
+    const cat=inp.closest('.category');
+    const type=cat.id==='series'?'tv':'movie';
+    const endpoint=q? `/search/${type}?query=${encodeURIComponent(q)}` : (type==='tv'?'/tv/popular':'/movie/popular');
+    timer=setTimeout(()=> loadData(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}&language=en-US`, cat, type), 400);
+  });
+});
+
+// TV Remote Navigation
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('globalPlayer').classList.contains('active')) return;
+  const activeCat=document.querySelector('.category.active');
+  const visibleCards=Array.from(activeCat.querySelectorAll('.card:not(.hidden)'));
+  const focusable=[...Array.from(document.querySelectorAll('.tab')),...visibleCards.flatMap(c=>[c,c.querySelector('.btn')])].filter(Boolean);
+  const idx=focusable.indexOf(document.activeElement);
+
+  if(['ArrowUp','ArrowLeft'].includes(e.key)){e.preventDefault();if(idx>0)focusable[idx-1].focus()}
+  else if(['ArrowDown','ArrowRight'].includes(e.key)){e.preventDefault();if(idx<focusable.length-1)focusable[idx+1].focus()}
+  else if(['Enter',' '].includes(e.key)){
+    e.preventDefault();
+    if(document.activeElement.classList.contains('tab'))document.activeElement.click();
+    else if(document.activeElement.classList.contains('img-wrap')||document.activeElement.classList.contains('btn'))document.activeElement.click();
+    else if(document.activeElement.classList.contains('card'))document.activeElement.querySelector('.img-wrap')?.click()||document.activeElement.querySelector('.btn')?.focus();
+  }
+});
+</script>
+</body>
+</html>
