@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Streaming Center</title>
+<link rel="stylesheet" href="style-t.css">
+</head>
+<body>
+
+<!-- ✅ GLOBAL FULL‑SCREEN PLAYER WITH FULL SEASON SUPPORT -->
+<div class="player-overlay" id="globalPlayer">
+  <div class="player-wrapper">
+    <button class="close-btn" onclick="closeFullscreenPlayer()">✕</button>
+    <div class="sel-bar" id="seriesSelector" style="display:none">
+      <h4>Season:</h4>
+      <select id="seasonSelect" onchange="seasonChanged()">
+        <option class="sel-loading">Loading…</option>
+      </select>
+      <h4>Episode:</h4>
+      <select id="episodeSelect" onchange="playEpisode()">
+        <option class="sel-loading">—</option>
+      </select>
+      <button class="btn" onclick="playEpisode()">▶ Play</button>
+    </div>
+    <iframe id="streamFrame" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+  </div>
+</div>
+
+<div class="container">
+<h1>📺 Streaming Center</h1>
+
+<div class="tabs">
+<button class="tab active" data-cat="movies">🎬 Movies</button>
+<button class="tab" data-cat="series">📺 Series</button>
+<button class="tab" data-cat="apps">📱 Apps</button>
+<button class="tab" data-cat="websites">🌐 Websites</button>
+</div>
+
+<!-- === 🎬 MOVIES === -->
+<div class="category active" id="movies">
+  <div class="search-wrap"><span class="search-icon">🔍</span>
+  <input type="text" class="searchField" placeholder="Search movies...">
+  </div>
+  <div class="grid results"></div>
+  <div class="loading">Loading popular movies...</div>
+  <div class="error hidden"></div>
+
+  <br><h2>📌 Tagalog Dubbed</h2>
+  <div class="grid">
+  <div class="card" tabindex="0" data-name="WEB-DL | HEVC | 1080p | Dual Audio | English Subtitle">
+    <div class="img-wrap" onclick="openFullscreenPlayer('movie','https://www.mediafire.com/file/pmrjzxan8au1qsu/Gladiator.II.2024.1080p.NF.WEB-DL.AAC5.1.x265-Kotoko.mkv/file')">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD-RgV7NJex6yvLZy8IZqCzDT4MGRHg3sjQwlHGuwnlA&s=10" alt="Gladiator II" loading="lazy">
+    </div>
+    <div class="info">
+      <h3>Gladiator II (2024) | Tagalog Dubbed</h3>
+      <div class="desc">1080p WEB‑DL · MKV<br>👆 Click → Full‑Screen View</div>
+      <button class="btn" onclick="openFullscreenPlayer('movie','https://www.mediafire.com/file/pmrjzxan8au1qsu/Gladiator.II.2024.1080p.NF.WEB-DL.AAC5.1.x265-Kotoko.mkv/file')">⬇️ Download / View</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- === 📺 SERIES === -->
+<div class="category" id="series">
+  <div class="search-wrap"><span class="search-icon">🔍</span>
+  <input type="text" class="searchField" placeholder="Search TV series...">
+  </div>
+  <div class="grid results"></div>
+  <div class="loading">Loading popular series...</div>
+  <div class="error hidden"></div>
+
+  <br><h2>📌 Local Series Example</h2>
+  <div class="grid">
+  <div class="card" tabindex="0" data-name="house of the dragon">
+    <div class="img-wrap" onclick="openFullscreenPlayer('tv',null,94997)">
+      <img src="https://via.placeholder.com/300x420/242426/f8f9fa?text=House+of+the+Dragon" alt="House of the Dragon" loading="lazy">
+    </div>
+    <div class="info">
+      <h3>House of the Dragon (2022)</h3>
+      <div class="desc">Select Seasons & Episodes<br>⚠️ VidVault currently offline</div>
+      <button class="btn" onclick="openFullscreenPlayer('tv',null,94997)">📺 Select Season & Episode</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- === 📱 APPS === -->
+<div class="category" id="apps">
+<div class="grid">
+<div class="card" tabindex="0" data-name="honor tv vip">
+<div class="img-wrap"><img src="https://i.imgur.com/C6CD0gF.jpeg" alt="HONOR TV VIP" loading="lazy"></div>
+<div class="info">
+<h3>HONOR TV VIP 1.3</h3>
+<div class="desc">Smart TV & Android streaming app.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Link Dead</a>
+<p class="warn">Link unavailable</p>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="maflix">
+<div class="img-wrap"><img src="https://i.imgur.com/cdSX74I.png" alt="MAFLIX" loading="lazy"></div>
+<div class="info">
+<h3>MAFLIX v1.1</h3>
+<div class="desc">Movies & series app.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Unsupported File</a>
+<p class="warn">File type error</p>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="ott tv">
+<div class="img-wrap"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ7MHfAy4aUvx6tWJ17dZtIlmnpXmgWRpwFq8Qe-oc13TOrd-IuPe2xU6p&s=10" alt="OTT TV" loading="lazy"></div>
+<div class="info">
+<h3>OTT TV v1.7.2.2</h3>
+<div class="desc">IPTV & live player.</div>
+<a class="btn" href="#" download rel="noopener noreferrer nofollow" style="opacity:.7;cursor:not-allowed">⚠️ Unsupported File</a>
+<p class="warn">File type error</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- === 🌐 WEBSITES === -->
+<div class="category" id="websites">
+<div class="grid">
+<div class="card" tabindex="0" data-name="maflix website movies">
+<div class="img-wrap"><img src="https://i.imgur.com/cdSX74I.png" alt="MAFLIX Website" loading="lazy"></div>
+<div class="info">
+<h3>MAFLIX</h3>
+<div class="desc">Movies & series site — maflix.dpdns.org</div>
+<a class="btn" href="https://maflix.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
+</div>
+</div>
+<div class="card" tabindex="0" data-name="masports live sports">
+<div class="img-wrap" style="background:linear-gradient(135deg,#34a853,#0d9668);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:default">⚽</div>
+<div class="info">
+<h3>MASPORTS</h3>
+<div class="desc">Live sports — masports.dpdns.org</div>
+<a class="btn" href="https://masports.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<script src="script-t.js"></script>
+</body>
+</html>
