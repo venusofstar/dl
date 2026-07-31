@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Streaming Center</title>
-<link rel="stylesheet" href="style-t.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -13,17 +13,17 @@
   <div class="player-wrapper">
     <button class="close-btn" onclick="closeFullscreenPlayer()">✕</button>
     <div class="sel-bar" id="seriesSelector" style="display:none">
-      <h4>Season:</h4>
+      <h4 style="color:#fff;margin:0 8px 0 0">Season:</h4>
       <select id="seasonSelect" onchange="seasonChanged()">
         <option class="sel-loading">Loading…</option>
       </select>
-      <h4>Episode:</h4>
+      <h4 style="color:#fff;margin:0 8px 0 0">Episode:</h4>
       <select id="episodeSelect" onchange="playEpisode()">
         <option class="sel-loading">—</option>
       </select>
       <button class="btn" onclick="playEpisode()">▶ Play</button>
     </div>
-    <iframe id="streamFrame" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+    <iframe id="streamFrame" src="" allowfullscreen allow="autoplay; fullscreen; picture-in-picture" style="flex:1"></iframe>
   </div>
 </div>
 
@@ -50,11 +50,11 @@
   <div class="grid">
   <div class="card" tabindex="0" data-name="WEB-DL | HEVC | 1080p | Dual Audio | English Subtitle">
     <div class="img-wrap" onclick="openFullscreenPlayer('movie','https://www.mediafire.com/file/pmrjzxan8au1qsu/Gladiator.II.2024.1080p.NF.WEB-DL.AAC5.1.x265-Kotoko.mkv/file')">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD-RgV7NJex6yvLZy8IZqCzDT4MGRHg3sjQwlHGuwnlA&s=10" alt="Gladiator II" loading="lazy">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMUYCz2NFboyTlMy68iu4coe37WPlrWDojkZZ1FVpFe2wXNjA6wdyTrECp&s=10" alt="Colony (2026)" loading="lazy">
     </div>
     <div class="info">
       <h3>Gladiator II (2024) | Tagalog Dubbed</h3>
-      <div class="desc">1080p WEB‑DL · MKV<br>👆 Click → Full‑Screen View</div>
+      <div class="desc">1080p WEB‑DL · MKV H.264<br>👆 Click → Full‑Screen View</div>
       <button class="btn" onclick="openFullscreenPlayer('movie','https://www.mediafire.com/file/pmrjzxan8au1qsu/Gladiator.II.2024.1080p.NF.WEB-DL.AAC5.1.x265-Kotoko.mkv/file')">⬇️ Download / View</button>
     </div>
   </div>
@@ -74,11 +74,11 @@
   <div class="grid">
   <div class="card" tabindex="0" data-name="house of the dragon">
     <div class="img-wrap" onclick="openFullscreenPlayer('tv',null,94997)">
-      <img src="https://via.placeholder.com/300x420/242426/f8f9fa?text=House+of+the+Dragon" alt="House of the Dragon" loading="lazy">
+      <img src="https://upload.wikimedia.org/wikipedia/en/7/70/House_of_the_Dragon_key_art.jpg" alt="House of the Dragon" loading="lazy">
     </div>
     <div class="info">
       <h3>House of the Dragon (2022)</h3>
-      <div class="desc">Select Seasons & Episodes<br>⚠️ VidVault currently offline</div>
+      <div class="desc">Auto‑loads ALL Seasons & Episodes<br>👆 Click → Select & Play</div>
       <button class="btn" onclick="openFullscreenPlayer('tv',null,94997)">📺 Select Season & Episode</button>
     </div>
   </div>
@@ -125,7 +125,7 @@
 <div class="img-wrap"><img src="https://i.imgur.com/cdSX74I.png" alt="MAFLIX Website" loading="lazy"></div>
 <div class="info">
 <h3>MAFLIX</h3>
-<div class="desc">Movies & series site — maflix.dpdns.org</div>
+<div class="desc">Free movies & series site</div>
 <a class="btn" href="https://maflix.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
 </div>
 </div>
@@ -133,7 +133,7 @@
 <div class="img-wrap" style="background:linear-gradient(135deg,#34a853,#0d9668);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:default">⚽</div>
 <div class="info">
 <h3>MASPORTS</h3>
-<div class="desc">Live sports — masports.dpdns.org</div>
+<div class="desc">Free live sports streaming</div>
 <a class="btn" href="https://masports.dpdns.org/" target="_blank" rel="noopener noreferrer nofollow">🔗 Visit</a>
 </div>
 </div>
@@ -142,6 +142,6 @@
 
 </div>
 
-<script src="script-t.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
