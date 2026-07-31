@@ -1,0 +1,60 @@
+:root{--pri:#1a73e8;--bg:#121212;--card:#242426;--txt:#f8f9fa;--warn:#ffcc00;--err:#e53935;--inactive:#3a3a3c;--light:#38383a;--focus:0 0 0 2px #4285f4,0 0 12px rgba(66,133,244,.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Segoe UI,Roboto,sans-serif;padding:8px;min-height:100vh;line-height:1.35}
+.container{max-width:1100px;margin:0 auto}
+h1{text-align:center;font-size:clamp(1.15rem,3.8vw,2rem);margin:0 0 10px}
+h2{font-size:1rem;margin:8px 0 12px;color:#ddd}
+h4{font-size:.9rem;margin:6px 0 4px}
+
+/* === SEARCH === */
+.search-wrap{max-width:440px;margin:0 auto 12px;position:relative}
+.searchField{width:100%;padding:9px 12px 9px 34px;border:none;border-radius:8px;background:var(--card);color:var(--txt);font-size:.9rem;outline:none}
+.searchField:focus{box-shadow:var(--focus)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#999;font-size:1rem}
+.loading{text-align:center;padding:20px;color:#aaa}
+.error{color:var(--err);text-align:center;padding:15px;font-size:.9rem}
+
+/* === TABS === */
+.tabs{display:flex;gap:6px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:7px 13px;background:var(--inactive);border:none;border-radius:7px;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;outline:none;transition:all .2s}
+.tab.active{background:var(--pri)}
+.tab:focus{box-shadow:var(--focus)}
+
+/* === GRID & CARD === */
+.category{display:none}
+.category.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:var(--card);border-radius:9px;overflow:hidden;outline:none;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+.card:focus,.btn:focus{transform:scale(1.025);box-shadow:var(--focus)}
+
+/* === FULLSCREEN IFRAME OVERLAY === */
+.player-overlay{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:0}
+.player-overlay.active{display:flex}
+.player-wrapper{position:relative;width:100%;height:100%;display:flex;flex-direction:column}
+.player-wrapper iframe{width:100%;height:100%;border:none;display:block;allowfullscreen allow="autoplay; fullscreen; picture-in-picture"}
+
+/* ✕ CLOSE BUTTON */
+.close-btn{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.85);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:22px;font-weight:bold;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 10px rgba(0,0,0,.5)}
+.close-btn:hover{background:var(--pri)}
+
+/* === SEASON & EPISODE SELECTOR — NOW SHOWS ALL SEASONS === */
+.sel-bar{display:flex;gap:8px;padding:10px;background:var(--card);border-bottom:1px solid #000;z-index:20;flex-wrap:wrap;align-items:center}
+.sel-bar select{flex:1;min-width:120px;padding:8px 10px;border-radius:6px;background:var(--light);color:#fff;border:none;outline:none;font-size:.85rem;cursor:pointer}
+.sel-bar .btn{max-width:140px;padding:8px 12px;font-size:.85rem;flex-shrink:0}
+.sel-loading{color:#aaa;font-size:.85rem;padding:6px 8px}
+
+.img-wrap{width:100%;height:140px;background:#000;flex-shrink:0;cursor:pointer;transition:opacity .2s}
+.img-wrap:hover{opacity:.9}
+img{width:100%;height:100%;object-fit:cover;display:block}
+.info{padding:10px;flex-grow:1;display:flex;flex-direction:column}
+h3{font-size:.9rem;margin:0 0 5px;line-height:1.2}
+.desc{color:#bbb;font-size:.78rem;margin:0 0 9px;line-height:1.35}
+.btn{display:block;padding:8px;background:var(--pri);color:#fff;text-align:center;border-radius:6px;outline:none;font-size:.85rem;transition:background .2s;border:none;cursor:pointer;width:100%;font-weight:600}
+.btn:hover,.btn:focus{background:#0066cc}
+.hidden{display:none !important}
+.warn{font-size:.7rem;color:var(--warn);margin-top:5px;text-align:center}
+
+/* Responsive */
+@media (min-width:600px){.grid{grid-template-columns:repeat(3,1fr);gap:14px}.img-wrap{height:160px}.info{padding:12px};h3{font-size:1rem}}
+@media (min-width:1024px){.grid{grid-template-columns:repeat(4,240px);justify-content:center;gap:18px}.img-wrap{height:180px};body{padding:16px};h1{margin-bottom:16px};.tab{padding:9px 18px;font-size:.95rem}}
+@media (max-width:359px){.img-wrap{height:120px};.info{padding:8px};h3{font-size:.85rem};.desc{font-size:.75rem;margin-bottom:7px};.btn{padding:7px;font-size:.82rem};.sel-bar{flex-direction:column;gap:6px;align-items:stretch}}
