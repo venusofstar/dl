@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gladiator II (2024) | Download</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+body{
+    background:#111;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+.card{
+    width:100%;
+    max-width:500px;
+    background:#1b1b1b;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+h2{
+    color:#00e676;
+    margin-bottom:10px;
+}
+.info{
+    color:#ccc;
+    margin-bottom:20px;
+    line-height:1.6;
+}
+button{
+    background:#00c853;
+    color:#fff;
+    border:none;
+    padding:14px 24px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+button:hover{
+    background:#00b248;
+}
+iframe{
+    width:100%;
+    height:600px;
+    border:none;
+    border-radius:10px;
+    margin-top:20px;
+    display:none;
+    background:#fff;
+}
+.note{
+    margin-top:15px;
+    color:#ffb74d;
+    font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Wild Sing (2026)</h2>
+
+    <div class="info">
+        Tagalog Dubbed<br>
+        1080p WEB-DL · HEVC
+    </div>
+
+    <button onclick="openDownload()">
+        ⬇️ Download
+    </button>
+
+    <iframe id="viewer"></iframe>
+
+    <div class="note">
+        Note:.
+    </div>
+</div>
+
+<script>
+function openDownload() {
+    const url = "https://download1583.mediafire.com/gibpmqsponbgaCVRA5XzNqCfUW1DlakvdckLuiWYlfTyfomxLM6iJ8D923vqq8UQIPgGVOH2n8Pe95DyUH1MccmUc3qvPhwvTooUrBGdOF6oX_45TjlRPzKUi6YsnHJCHecH7wLVwluySUqzEDCdsvFZvIAKe7vimJG6L9SBKY5bew/ymqw526npe2m9of/Wild.Sing.2026.1080p.NF.WEB-DL.AAC5.1.x265-Kotoko.mkv";
+    const frame = document.getElementById("viewer");
+
+    frame.style.display = "block";
+    frame.src = url;
+
+    frame.onload = function() {
+        console.log("Iframe loaded.");
+    };
+
+    // Fallback because MediaFire prevents iframe embedding
+    setTimeout(() => {
+        window.open(url, "_blank");
+    }, 1500);
+}
+</script>
+
+</body>
+</html>
